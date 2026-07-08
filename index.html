@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para uma menina especial</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Fredoka', sans-serif; background-color: #fdfbfb; color: #333; overflow-x: hidden; scroll-behavior: smooth; }
+        section { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; border-bottom: 2px dashed #ffb8b8; }
+        h2 { color: #ff6b6b; margin-bottom: 15px; text-align: center; font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; z-index: 10; }
+        p.instrucoes { color: #555; margin-bottom: 20px; text-align: center; font-weight: 600; font-size: 1.2rem; z-index: 10; }
+        
+        .btn-proximo { display: none; position: absolute; bottom: 40px; padding: 15px 35px; background-color: #333; color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-family: 'Fredoka', sans-serif; font-weight: 700; cursor: pointer; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.1); animation: saltar 2s infinite; }
+        @keyframes saltar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        /* Secções escondidas inicialmente para bloquear o scroll */
+        #jardim, #jogo, #creditos { display: none; }
+
+        /* AUMENTO DA RASPADINHA PARA 340x240 */
+        .raspadinha-container { position: relative; width: 340px; height: 240px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; z-index: 5; user-select: none; -webkit-user-select: none; }
+        .mensagem-secreta { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 25px; font-size: 1.3rem; background: #fff9e6; color: #e66767; font-weight: 600; line-height: 1.4; }
+        #canvasRaspadinha { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; touch-action: none; z-index: 2; }
+        
+        #jardim { background: linear-gradient(to bottom, #a1c4fd 0%, #c2e9fb 100%); overflow: hidden; }
+        #canvasJardim { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1; }
+        
+        #jogo { background: #1a1a1a; color: white; }
+        #canvasJogo { background: #2d2d2d; border-radius: 15px; border: 3px solid #ff6b6b; cursor: none; touch-action: none; max-width: 100%; position: relative; }
+        #scoreBoard { font-family: 'VT323', monospace; font-size: 3rem; color: #ff6b6b; margin-bottom: 10px; z-index: 10; }
+        
+        #creditos { background-color: #2d3436; color: white; text-align: center; }
+        .equipa-lista { margin-top: 30px; font-family: 'VT323', monospace; font-size: 1.8rem; color: #ffeaa7; text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 2px dashed #ffb8b8; }
+        .equipa-lista p { margin: 10px 0; }
+        .data-creditos { margin-top: 40px; color: #b2bec3; font-size: 1.1rem; font-weight: 600; }
+
+        /* Easter Eggs Styling */
+        .easter-egg {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-5deg); 
+            background: rgba(255, 255, 255, 0.98);
+            color: #ff6b6b;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border: 2px dashed #ffb8b8;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            width: 85%;
+            max-width: 320px;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="mensagem">
+        <h2>Raspadinha Luana Sofia 21ª edição </h2>
+        <p class="instrucoes">Raspa com carinho</p>
+        <div class="raspadinha-container">
+            <div class="mensagem-secreta">
+                Muito parabéns Luana, gosto muito de ti, és uma menina muito especial e uma alma muito bonita e como não podia estar contigo hoje, escolhi esta prenda para te dar, espero que gostes
+            </div>
+            <canvas id="canvasRaspadinha"></canvas>
+        </div>
+        <button id="btnProximoMensagem" class="btn-proximo" onclick="irParaJardim()">Ver o resto das prendas ⬇️</button>
+    </section>
+
+    <section id="jardim">
+        <h2>O Teu Jardim</h2>
+        <p class="instrucoes">Clica no céu para plantar lírios (estes não morrem eu juro)</p>
+        <canvas id="canvasJardim"></canvas>
+        <button id="btnProximoJardim" class="btn-proximo" onclick="irParaJogo()">O Desafio do Tamboril ⬇️</button>
+    </section>
+
+    <section id="jogo">
+        <div id="scoreBoard">PONTOS: 0</div>
+        <p class="instrucoes" style="color: #dfe6e9; font-size: 1.2rem; margin-bottom: 5px;">
+            Apanha os bons jantares e foge dos horríveis tamboris!
+        </p>
+        <p class="instrucoes" style="color:#b2bec3; font-size: 1rem;">
+            🥘 Arroz (+10) | 🍝 Lasanha (+20) | 🐟 Tamboril Cru (-20)
+        </p>
+        <canvas id="canvasJogo" width="340" height="480"></canvas>
+        <button id="btnRestart" class="btn-proximo" style="bottom: 80px;" onclick="restartGame()">Jogar de Novo 🔄</button>
+        <button id="btnCreditos" class="btn-proximo" style="bottom: 20px; background-color: #ff6b6b;" onclick="irParaCreditos()">Finalizar ⬇️</button>
+    </section>
+
+    <section id="creditos">
+        <h2 style="color: #ff7675;">Desenvolvido com muito carinho pela equipa:</h2>
+        <div class="equipa-lista">
+            <p>👨‍💻 Programador ........ Dinis</p>
+            <p>🎨 Diretor Criativo ... Dinis</p>
+            <p>🕵️‍♂️ Testador Oficial ... Dinis</p>
+            <p>🍕 Financiador ........ Dinis</p>
+        </div>
+        <div class="data-creditos">9 de Julho de 2026</div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // --- FUNÇÃO GLOBAL DE EASTER EGGS ---
+        function mostrarEasterEgg(texto) {
+            const el = document.createElement('div');
+            el.innerText = texto;
+            el.className = 'easter-egg';
+            document.body.appendChild(el);
+            
+            setTimeout(() => { el.style.opacity = 1; }, 100);
+            setTimeout(() => { 
+                el.style.opacity = 0; 
+                setTimeout(() => el.remove(), 1000); 
+            }, 5000);
+        }
+
+        // --- SISTEMA DE TIMEOUT POR PÁGINA ---
+        let timerEasterEgg;
+        function iniciarTimerPagina(pagina) {
+            clearTimeout(timerEasterEgg);
+            let mensagemTimeout = "";
+            
+            if (pagina === 'mensagem') {
+                mensagemTimeout = "Já podias ter rapado o ecrã todo! Continua a raspar!";
+            } else if (pagina === 'jardim') {
+                mensagemTimeout = "Leva o tempo que precisares, estas flores não murcham!";
+            } else if (pagina === 'jogo') {
+                mensagemTimeout = "Ainda estás com fome? Apanha essa lasanha!";
+            }
+
+            if(mensagemTimeout) {
+                // 5 minutos (300000 milissegundos)
+                timerEasterEgg = setTimeout(() => {
+                    mostrarEasterEgg(mensagemTimeout);
+                }, 300000);
+            }
+        }
+
+        // --- NAVEGAÇÃO / SCROLL LOCK ---
+        function irParaJardim() {
+            const sec = document.getElementById('jardim');
+            sec.style.display = 'flex';
+            setTimeout(() => sec.scrollIntoView({ behavior: 'smooth' }), 100);
+            initJardim();
+            iniciarTimerPagina('jardim');
+        }
+
+        function irParaJogo() {
+            const sec = document.getElementById('jogo');
+            sec.style.display = 'flex';
+            setTimeout(() => {
+                sec.scrollIntoView({ behavior: 'smooth' });
+                if (fallingItems.length === 0 && score === 0 && active) { 
+                    spawn(); update(); 
+                }
+            }, 100);
+            iniciarTimerPagina('jogo');
+        }
+
+        function irParaCreditos() {
+            clearTimeout(timerEasterEgg);
+            const sec = document.getElementById('creditos');
+            sec.style.display = 'flex';
+            setTimeout(() => sec.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
+
+        // --- ASSETS ---
+        const assets = { lily: new Image(), arroz: new Image(), peixe: new Image(), lasanha: new Image(), player: new Image() };
+        assets.lily.src = 'lily.png';
+        assets.arroz.src = 'arroz.png'; 
+        assets.peixe.src = 'bad.png'; 
+        assets.lasanha.src = 'lasanha.png'; 
+        assets.player.src = 'character.png';
+
+        // --- 1. RASPADINHA ---
+        const canvasRasp = document.getElementById('canvasRaspadinha');
+        const ctxRasp = canvasRasp.getContext('2d');
+        let isScratching = false;
+        let backupScratches = 0; 
+        
+        // Tamanho atualizado para 340x240
+        canvasRasp.width = 340; canvasRasp.height = 240;
+        ctxRasp.fillStyle = '#ced4da';
+        ctxRasp.fillRect(0, 0, 340, 240);
+        ctxRasp.font = "bold 22px 'Fredoka'";
+        ctxRasp.fillStyle = "#495057";
+        ctxRasp.textAlign = "center";
+        // Posição centralizada para o novo tamanho (170, 125)
+        ctxRasp.fillText("✨ RASPA AQUI ✨", 170, 125);
+        ctxRasp.globalCompositeOperation = 'destination-out';
+        
+        function scratch(e) {
+            if (!isScratching) return;
+            if (e.cancelable) e.preventDefault();
+            const rect = canvasRasp.getBoundingClientRect();
+            const t = e.touches ? e.touches[0] : e;
+            ctxRasp.beginPath();
+            ctxRasp.arc(t.clientX - rect.left, t.clientY - rect.top, 28, 0, Math.PI * 2);
+            ctxRasp.fill();
+            
+            backupScratches++;
+            if(backupScratches > 70) {
+                document.getElementById('btnProximoMensagem').style.display = 'block';
+            }
+        }
+
+        const checkScratchCompletion = () => {
+            if(isScratching) {
+                isScratching = false;
+                try {
+                    // Área de verificação atualizada para 340x240
+                    const pix = ctxRasp.getImageData(0,0,340,240).data;
+                    let t = 0;
+                    for(let i=3; i<pix.length; i+=4) if(pix[i] < 128) t++;
+                    if(t/(pix.length/4) > 0.8) document.getElementById('btnProximoMensagem').style.display = 'block';
+                } catch(error) {
+                    // Backup em caso de erro do Safari
+                }
+            }
+        };
+
+        canvasRasp.addEventListener('mousedown', () => isScratching = true);
+        canvasRasp.addEventListener('touchstart', (e) => { isScratching = true; scratch(e); }, { passive: false });
+        window.addEventListener('mouseup', checkScratchCompletion);
+        window.addEventListener('touchend', checkScratchCompletion);
+        canvasRasp.addEventListener('mousemove', scratch);
+        canvasRasp.addEventListener('touchmove', scratch, { passive: false });
+
+        // --- 2. JARDIM ---
+        const canvasJardim = document.getElementById('canvasJardim');
+        const ctxJardim = canvasJardim.getContext('2d');
+        let floresCount = 0;
+        let easterEggJardimMostrado = false;
+        
+        function initJardim() {
+            canvasJardim.width = window.innerWidth;
+            canvasJardim.height = window.innerHeight;
+            ctxJardim.fillStyle = '#44bd32';
+            ctxJardim.fillRect(0, canvasJardim.height - 60, canvasJardim.width, 60);
+        }
+        
+        canvasJardim.addEventListener('click', (e) => {
+            const rect = canvasJardim.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctxJardim.fillStyle = '#346821'; 
+            ctxJardim.fillRect(x - 2, y, 4, canvasJardim.height - y - 40);
+            
+            const scale = 110;
+            const aspect = assets.lily.height / assets.lily.width || 1;
+            if(assets.lily.complete) {
+                ctxJardim.drawImage(assets.lily, (x - scale/2) - 2, y - (scale*aspect)/2, scale, scale * aspect);
+            }
+            
+            floresCount++;
+            
+            if (floresCount >= 3) document.getElementById('btnProximoJardim').style.display = 'block';
+            
+            if (floresCount === 25 && !easterEggJardimMostrado) {
+                easterEggJardimMostrado = true;
+                mostrarEasterEgg("25 flores?! Queres transformar isto na Amazónia?");
+            }
+        });
+
+        // --- 3. JOGO ---
+        const canvasJogo = document.getElementById('canvasJogo');
+        const ctxJogo = canvasJogo.getContext('2d');
+        let score = 0;
+        let active = true;
+        let playCount = 1; 
+        
+        let player = { x: 120, y: 335, w: 100, h: 140 };
+        let lastX = 120; 
+        let facingRight = true;
+        const fallingItems = [];
+
+        function spawn() {
+            if (!active) return;
+            const rand = Math.random();
+            let isBad = false;
+            let imgSelecionada, pts;
+
+            if (rand < 0.4) {
+                isBad = true;
+                imgSelecionada = assets.peixe;
+                pts = -20;
+            } else if (rand < 0.7) {
+                imgSelecionada = assets.arroz;
+                pts = 10;
+            } else {
+                imgSelecionada = assets.lasanha;
+                pts = 20;
+            }
+
+            fallingItems.push({ 
+                x: Math.random() * (canvasJogo.width - 60), 
+                y: -60, 
+                img: imgSelecionada, 
+                good: !isBad, 
+                points: pts,
+                speed: 3 + Math.random() * 4 
+            });
+            setTimeout(spawn, 800);
+        }
+
+        function update() {
+            if (!active) return;
+            ctxJogo.clearRect(0, 0, canvasJogo.width, canvasJogo.height);
+
+            ctxJogo.save();
+            if (!facingRight) {
+                ctxJogo.translate(player.x + player.w, player.y);
+                ctxJogo.scale(-1, 1);
+                ctxJogo.drawImage(assets.player, 0, 0, player.w, player.h);
+            } else {
+                ctxJogo.drawImage(assets.player, player.x, player.y, player.w, player.h);
+            }
+            ctxJogo.restore();
+
+            fallingItems.forEach((it, i) => {
+                it.y += it.speed;
+                ctxJogo.save();
+                ctxJogo.translate(it.x + 30, it.y + 30);
+                
+                if (!it.good) {
+                    ctxJogo.rotate(-45 * Math.PI / 180);
+                } else if (it.img === assets.lasanha) {
+                    ctxJogo.rotate(90 * Math.PI / 180);
+                }
+
+                if(it.img.complete) ctxJogo.drawImage(it.img, -30, -30, 60, 60);
+                ctxJogo.restore();
+
+                if (it.y + 40 > player.y && it.y < player.y + 40 && it.x + 40 > player.x && it.x < player.x + player.w) {
+                    score += it.points; 
+                    if (score < 0) score = 0;
+                    fallingItems.splice(i, 1);
+                    document.getElementById('scoreBoard').innerText = `PONTOS: ${score}`;
+                    if (score >= 100) vitoria();
+                }
+                if (it.y > canvasJogo.height) fallingItems.splice(i, 1);
+            });
+            requestAnimationFrame(update);
+        }
+
+        function vitoria() {
+            active = false;
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            
+            ctxJogo.fillStyle = "rgba(255, 107, 107, 0.95)";
+            ctxJogo.fillRect(0, 0, canvasJogo.width, canvasJogo.height);
+            ctxJogo.fillStyle = "white";
+            ctxJogo.textAlign = "center";
+            ctxJogo.font = "45px 'VT323'";
+            ctxJogo.fillText("VITÓRIA! 🏆", 170, 200);
+            ctxJogo.font = "bold 22px 'Fredoka'";
+            ctxJogo.fillText("Conseguiste escapar do tamboril", 170, 240);
+            ctxJogo.fillText("Parabéns menina!", 170, 270); 
+            
+            document.getElementById('btnRestart').style.display = 'block';
+            document.getElementById('btnCreditos').style.display = 'block';
+        }
+
+        function restartGame() {
+            playCount++; 
+            
+            if (playCount === 4) {
+                mostrarEasterEgg("Ainda aqui? Estás viciada na lasanha e no tamboril");
+            } else if (playCount === 5) {
+                mostrarEasterEgg("5? isto nem é assim tão divertido quanto isso");
+            } else if (playCount === 7) {
+                mostrarEasterEgg("a serio? 7? eu desisto...");
+            }
+
+            document.getElementById('btnRestart').style.display = 'none';
+            document.getElementById('btnCreditos').style.display = 'none';
+            score = 0;
+            active = true;
+            fallingItems.length = 0; 
+            document.getElementById('scoreBoard').innerText = `PONTOS: ${score}`;
+            spawn();
+            update();
+        }
+
+        const move = (e) => {
+            const r = canvasJogo.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentX = clientX - r.left - player.w / 2;
+            
+            if (currentX > lastX + 2) facingRight = true;
+            else if (currentX < lastX - 2) facingRight = false;
+            
+            lastX = currentX;
+            player.x = currentX;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvasJogo.width - player.w) player.x = canvasJogo.width - player.w;
+        };
+
+        canvasJogo.addEventListener('mousemove', move);
+        canvasJogo.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
+
+        // INICIALIZAÇÃO
+        window.onload = () => {
+            iniciarTimerPagina('mensagem');
+            window.addEventListener('resize', () => { if (document.getElementById('jardim').style.display !== 'none') initJardim(); });
+        };
+    </script>
+</body>
+</html>
